@@ -18,14 +18,15 @@ AC_HAVE_LIBRARY(crypto)
 # AC_HAVE_LIBRARY(boost_thread)
 # AC_HAVE_LIBRARY(boost_filesystem)
 # AC_HAVE_LIBRARY(hiredis)
-# AC_HAVE_LIBRARY(zmq)
-# AC_HAVE_LIBRARY(ossp-uuid++)
-# AC_HAVE_LIBRARY(zapata-base)
-# AC_HAVE_LIBRARY(zapata-json)
-# AC_HAVE_LIBRARY(zapata-events)
-# AC_HAVE_LIBRARY(zapata-zmq)
-# AC_HAVE_LIBRARY(zapata-http)
-# AC_HAVE_LIBRARY(zapata-rest)
+AC_HAVE_LIBRARY(zmq)
+AC_HAVE_LIBRARY(ossp-uuid++)
+AC_HAVE_LIBRARY(zapata-base)
+AC_HAVE_LIBRARY(zapata-json)
+AC_HAVE_LIBRARY(zapata-events)
+AC_HAVE_LIBRARY(zapata-zmq)
+AC_HAVE_LIBRARY(zapata-http)
+AC_HAVE_LIBRARY(zapata-rest)
+AC_HAVE_LIBRARY(zapata-users)
 
 AC_CANONICAL_SYSTEM
 
@@ -52,5 +53,6 @@ AC_CONFIG_FILES(Makefile
 		etc/Makefile
                 include/Makefile
 		src/Makefile
+                src/lib/Makefile
                 src/api/Makefile)
 AC_OUTPUT
