@@ -2,69 +2,19 @@
 	"id" : "a00f39b2-9fa0-11e6-8e65-c48e8ff83bff",
 	"defaults" : {
 		"lambdas" : {
-			"value" : lambda("linear", 1),
-			"threshold" : lambda("sigmoid", 1),
-			"backpropagation" : lambda("gradient_descent", 1)
+			"value" : lambda("gdw::nn::linear", 2),
+			"threshold" : lambda("gdw::nn::sigmoid", 1),
+			"backpropagation" : lambda("gdw::nn::stochastic_gradient_descent", 4)
 		}
 	}
+	"weights" : "",
+	"ouputs" : "",
+	"deltas" : "",
+	"sigmas" : "",
+	"nodes" : [ { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { } ],
 	"layers" : [
-		[
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] },
-			{ "lambdas" : {}, "inbound" : [], "weights" : [] }
-		],
-		[
-			{
-				"inbound" : [ [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7] ],
-				"weights" : [ 1, 1, 1, 1, 1, 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7] ],
-				"weights" : [ 1, 1, 1, 1, 1, 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7] ],
- 				"weights" : [ 1, 1, 1, 1, 1, 1, 1, 1 ]
-			}
-		],
-		[
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
- 				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			},
-			{
-				"inbound" : [ [1, 0], [1, 1], [1, 2] ],
-				"weights" : [ 1, 1, 1 ]
-			}
-		]
+		[ 0, 1, 2, 3, 4, 5, 6, 7],
+		[ 8, 9, 10 ],
+		[ 11, 12, 13, 14, 15, 16, 17, 18 ]
 	]
 }

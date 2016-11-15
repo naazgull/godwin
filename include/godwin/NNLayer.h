@@ -24,14 +24,23 @@ SOFTWARE.
 #pragma once
 
 #include <zapata/json.h>
+#include <godwin/Matrix.h>
 
 using namespace std;
 #if !defined __APPLE__
 using namespace __gnu_cxx;
 #endif
 
+#define N_MATRIX 4
+#define WEIGHTS 0
+#define OUTPUTS 1
+#define DELTA 2
+#define SIGMA 3
+
 namespace gdw {
 
+	typedef size_t index_t;
+	
 	class NNLayer;
 
 	class neural_net : public std::shared_ptr< gdw::NNLayer > {
@@ -46,17 +55,18 @@ namespace gdw {
 		virtual ~NNLayer();
 
 		virtual zpt::json network();
+		virtual gdw::mat_ptr matrix(gdw::index_t _which);
 		
 		virtual void set_value_lambda(zpt::lambda _function);
-		virtual void set_value_lambda(size_t _layer, size_t _neuron, zpt::lambda _function);
+		virtual void set_value_lambda(gdw::index_t _neuron, zpt::lambda _function);
 		virtual void set_threshold_lambda(zpt::lambda _function);
-		virtual void set_threshold_lambda(size_t _layer, size_t _neuron, zpt::lambda _function);
+		virtual void set_threshold_lambda(gdw::index_t _neuron, zpt::lambda _function);
 		virtual void set_backpropagation_lambda(zpt::lambda _function);
-		virtual void set_backpropagation_lambda(size_t _layer, size_t _neuron, zpt::lambda _function);
+		virtual void set_backpropagation_lambda(gdw::index_t _neuron, zpt::lambda _function);
 
-		virtual void push(size_t _layer);
+		virtual gdw::index_t push(gdw::index_t _layer, size_t _n_neurons = 1);
 		
-		virtual void wire(size_t _layer, size_t _neuron, zpt::json _inbound);
+		virtual void wire(gdw::index_t _neuron, zpt::json _inbound);
 		virtual void wire(zpt::json _network);
 		virtual void wire(std::string _network_serialized);
 		virtual void wire(std::istream _input_stream);
@@ -69,8 +79,12 @@ namespace gdw {
 
 	private:
 		zpt::json __network;
+		std::vector< gdw::mat_ptr > __matrix;
 		
-		virtual void adjust(size_t _layer, size_t _neuron, double weight);
+		virtual void adjust(zpt::json _input, zpt::json _expected_output, zpt::json _output);
+		virtual void adjust(gdw::index_t _layer, gdw::index_t _neuron, double weight);
+
+		static constexpr const char* __matrix_names[N_MATRIX] = { "weights", "outputs", "deltas", "sigmas" };
 	};
 	
 }
