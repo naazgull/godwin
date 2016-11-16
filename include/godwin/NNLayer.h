@@ -34,19 +34,24 @@ using namespace __gnu_cxx;
 #define N_MATRIX 4
 #define WEIGHTS 0
 #define OUTPUTS 1
-#define DELTA 2
-#define SIGMA 3
+#define DELTAS 2
+#define SIGMAS 3
 
 namespace gdw {
 
-	typedef size_t index_t;
-	
 	class NNLayer;
 
+	typedef size_t index_t;
+	typedef gdw::NNLayer nn;
+	
 	class neural_net : public std::shared_ptr< gdw::NNLayer > {
 	public:
 		neural_net();
+		neural_net(gdw::NNLayer* _target);
 		virtual ~neural_net();
+
+		static gdw::neural_net unpack(zpt::context _ctx);
+
 	};
 	
 	class NNLayer {
@@ -64,7 +69,7 @@ namespace gdw {
 		virtual void set_backpropagation_lambda(zpt::lambda _function);
 		virtual void set_backpropagation_lambda(gdw::index_t _neuron, zpt::lambda _function);
 
-		virtual gdw::index_t push(gdw::index_t _layer, size_t _n_neurons = 1);
+		virtual gdw::index_t push(zpt::json _neuron, size_t _n_neurons = 1);
 		
 		virtual void wire(gdw::index_t _neuron, zpt::json _inbound);
 		virtual void wire(zpt::json _network);
@@ -77,14 +82,15 @@ namespace gdw {
 		virtual void train(zpt::json _input, zpt::json _expected_output);
 		virtual zpt::json classify(zpt::json _input);
 
+		static std::string __matrix_names[N_MATRIX];
+
 	private:
 		zpt::json __network;
 		std::vector< gdw::mat_ptr > __matrix;
 		
+		virtual zpt::json classify(arma::uvec& _to_process);
 		virtual void adjust(zpt::json _input, zpt::json _expected_output, zpt::json _output);
-		virtual void adjust(gdw::index_t _layer, gdw::index_t _neuron, double weight);
 
-		static constexpr const char* __matrix_names[N_MATRIX] = { "weights", "outputs", "deltas", "sigmas" };
 	};
 	
 }

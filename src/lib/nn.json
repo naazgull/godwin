@@ -2,7 +2,7 @@
 	"id" : "a00f39b2-9fa0-11e6-8e65-c48e8ff83bff",
 	"defaults" : {
 		"lambdas" : {
-			"value" : lambda("gdw::nn::linear", 2),
+			"value" : lambda("gdw::nn::linear", 1),
 			"threshold" : lambda("gdw::nn::sigmoid", 1),
 			"backpropagation" : lambda("gdw::nn::stochastic_gradient_descent", 4)
 		}
@@ -11,10 +11,23 @@
 	"ouputs" : "",
 	"deltas" : "",
 	"sigmas" : "",
-	"nodes" : [ { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { }, { } ],
-	"layers" : [
-		[ 0, 1, 2, 3, 4, 5, 6, 7],
-		[ 8, 9, 10 ],
-		[ 11, 12, 13, 14, 15, 16, 17, 18 ]
+	"nodes" : [
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ "is_input" : true },
+		{ }, { }, { },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true },
+		{ "is_output" : true }
 	]
 }

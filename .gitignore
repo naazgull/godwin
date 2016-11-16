@@ -35,3 +35,4 @@ deps/
 upstream
 packages
 
+src/lib/gdw-test
