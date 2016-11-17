@@ -49,9 +49,6 @@ namespace gdw {
 		neural_net();
 		neural_net(gdw::NNLayer* _target);
 		virtual ~neural_net();
-
-		static gdw::neural_net unpack(zpt::context _ctx);
-
 	};
 	
 	class NNLayer {
@@ -61,6 +58,8 @@ namespace gdw {
 
 		virtual zpt::json network();
 		virtual gdw::mat_ptr matrix(gdw::index_t _which);
+		virtual double learning_rate();
+		virtual void learning_rate(double _learning_rate);
 		
 		virtual void set_value_lambda(zpt::lambda _function);
 		virtual void set_value_lambda(gdw::index_t _neuron, zpt::lambda _function);
@@ -87,9 +86,11 @@ namespace gdw {
 	private:
 		zpt::json __network;
 		std::vector< gdw::mat_ptr > __matrix;
+		double __learning_rate;
 		
 		virtual zpt::json classify(arma::uvec& _to_process);
-		virtual void adjust(zpt::json _input, zpt::json _expected_output, zpt::json _output);
+		virtual void adjust(zpt::json _input, zpt::json _expected_output);
+		virtual void adjust(arma::uvec& _to_process);
 
 	};
 	
