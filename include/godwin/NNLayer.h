@@ -31,11 +31,12 @@ using namespace std;
 using namespace __gnu_cxx;
 #endif
 
-#define N_MATRIX 4
+#define N_MATRIX 5
 #define WEIGHTS 0
 #define OUTPUTS 1
 #define DELTAS 2
 #define SIGMAS 3
+#define UNITS 4
 
 namespace gdw {
 
@@ -60,6 +61,8 @@ namespace gdw {
 		virtual gdw::mat_ptr matrix(gdw::index_t _which);
 		virtual double learning_rate();
 		virtual void learning_rate(double _learning_rate);
+		virtual double* weight_generation_limits();
+		virtual void weight_generation_limits(double _lower, double _higher);
 		
 		virtual void set_value_lambda(zpt::lambda _function);
 		virtual void set_value_lambda(gdw::index_t _neuron, zpt::lambda _function);
@@ -78,7 +81,7 @@ namespace gdw {
 		virtual std::string snapshot();
 		virtual void snapshot(std::ostream _output_stream);
 
-		virtual void train(zpt::json _input, zpt::json _expected_output);
+		virtual zpt::json train(zpt::json _input, zpt::json _expected_output);
 		virtual zpt::json classify(zpt::json _input);
 
 		static std::string __matrix_names[N_MATRIX];
@@ -87,6 +90,7 @@ namespace gdw {
 		zpt::json __network;
 		std::vector< gdw::mat_ptr > __matrix;
 		double __learning_rate;
+		double __weight_random_limits[2];
 		
 		virtual zpt::json classify(arma::uvec& _to_process);
 		virtual void adjust(zpt::json _input, zpt::json _expected_output);

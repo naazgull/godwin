@@ -38,6 +38,9 @@ using namespace __gnu_cxx;
 int main(int argc, char* argv[]) {
 	gdw::neural_net _nn;
 
+	_nn->learning_rate(0.05);
+	_nn->weight_generation_limits(0.001, 0.05);
+	
 	_nn->set_value_lambda(zpt::lambda("gdw::nn::linear", 1));
 	_nn->set_threshold_lambda(zpt::lambda("gdw::nn::sigmoid", 1));
 	_nn->set_backpropagation_lambda(zpt::lambda("gdw::nn::gradient_descent::sigma", 2));
@@ -61,14 +64,36 @@ int main(int argc, char* argv[]) {
 		_nn->wire(_i, _l1_nodes);
 	}
 
-	_nn->train({ zpt::array, 1, 0, 0, 0, 0, 0, 0, 0 }, { zpt::array, 1, 0, 0, 0, 0, 0, 0, 0 });
-	_nn->train({ zpt::array, 0, 1, 0, 0, 0, 0, 0, 0 }, { zpt::array, 0, 1, 0, 0, 0, 0, 0, 0 });
-	_nn->train({ zpt::array, 0, 0, 1, 0, 0, 0, 0, 0 }, { zpt::array, 0, 0, 1, 0, 0, 0, 0, 0 });
-	_nn->train({ zpt::array, 0, 0, 0, 1, 0, 0, 0, 0 }, { zpt::array, 0, 0, 0, 1, 0, 0, 0, 0 });
-	_nn->train({ zpt::array, 0, 0, 0, 0, 1, 0, 0, 0 }, { zpt::array, 0, 0, 0, 0, 1, 0, 0, 0 });
-	_nn->train({ zpt::array, 0, 0, 0, 0, 0, 1, 0, 0 }, { zpt::array, 0, 0, 0, 0, 0, 1, 0, 0 });
-	_nn->train({ zpt::array, 0, 0, 0, 0, 0, 0, 1, 0 }, { zpt::array, 0, 0, 0, 0, 0, 0, 1, 0 });
-	_nn->train({ zpt::array, 0, 0, 0, 0, 0, 0, 0, 1 }, { zpt::array, 0, 0, 0, 0, 0, 0, 0, 1 });
+	std::cout << *_nn->matrix(WEIGHTS) << endl << flush;
+
+	zpt::json _training_set(
+		{
+			{ zpt::array, 1, 0, 0, 0, 0, 0, 0, 0 },
+			{ zpt::array, 0, 1, 0, 0, 0, 0, 0, 0 },
+			{ zpt::array, 0, 0, 1, 0, 0, 0, 0, 0 },
+			{ zpt::array, 0, 0, 0, 1, 0, 0, 0, 0 },
+			{ zpt::array, 0, 0, 0, 0, 1, 0, 0, 0 },
+			{ zpt::array, 0, 0, 0, 0, 0, 1, 0, 0 },
+			{ zpt::array, 0, 0, 0, 0, 0, 0, 1, 0 },
+			{ zpt::array, 0, 0, 0, 0, 0, 0, 0, 1 },
+		}
+	);
+	std::random_device _rd;
+	std::mt19937 _gen(_rd());
+	std::uniform_int_distribution<int> _dist(0, 8);
+	for (size_t _epoch = 0; _epoch != 80000; _epoch++) {
+		int _index = _dist(_gen);
+		_nn->train(_training_set[_index], _training_set[_index]);
+		std::cout << "\r" << _epoch << flush;
+	}
+	std::cout << endl << flush;
+	
+	std::cout << *_nn->matrix(WEIGHTS) << endl << flush;
+	std::cout << *_nn->matrix(SIGMAS) << endl << flush;
+
+	for (auto _entry : _training_set->arr()) {
+		std::cout << std::string(_entry) << " -> " << std::string(_nn->classify(_entry)) << endl << flush;
+	}
 	
 	return 0;
 }

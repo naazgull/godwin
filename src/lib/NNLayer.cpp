@@ -33,9 +33,9 @@ gdw::neural_net::neural_net(gdw::nn* _target) : std::shared_ptr< gdw::NNLayer >(
 gdw::neural_net::~neural_net() {
 }
 
-std::string gdw::NNLayer::__matrix_names[4] = { "weights", "outputs", "deltas", "sigmas" };
+std::string gdw::NNLayer::__matrix_names[N_MATRIX] = { "weights", "outputs", "deltas", "sigmas", "units" };
 
-gdw::NNLayer::NNLayer() : __learning_rate(0.05) {
+gdw::NNLayer::NNLayer() : __learning_rate(0.05), __weight_random_limits{ -0.05, 0.05 } {
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
 		this->__matrix.push_back(gdw::mat_ptr());
 	}
@@ -87,17 +87,16 @@ gdw::NNLayer::NNLayer() : __learning_rate(0.05) {
 					}
 					_sn = _on * (1 - _on) * _snk;
 					(*_nn->matrix(SIGMAS))(0, _node_idx) = _sn;
-
-					if (!((bool) _node["is_input"])) {
-						arma::uvec _upstream = arma::find(_nn->matrix(WEIGHTS)->col(_node_idx));
-						for (auto _nk : _upstream) {
-							(*_nn->matrix(DELTAS))(0, _node_idx) = _nn->learning_rate() * (*_nn->matrix(WEIGHTS))(_nk, _node_idx) * (*_nn->matrix(SIGMAS))(0, _node_idx);
-							(*_nn->matrix(WEIGHTS))(_nk, _node_idx) = (*_nn->matrix(WEIGHTS))(_nk, _node_idx) + (*_nn->matrix(DELTAS))(0, _node_idx);
-						}
-					}
-
 				}
-								
+
+				if (!((bool) _node["is_input"])) {
+					arma::uvec _upstream = arma::find(_nn->matrix(WEIGHTS)->col(_node_idx));
+					for (auto _nk : _upstream) {
+						(*_nn->matrix(DELTAS))(0, _node_idx) = _nn->learning_rate() * (*_nn->matrix(OUTPUTS))(0, _node_idx) * (*_nn->matrix(SIGMAS))(0, _node_idx);
+						(*_nn->matrix(WEIGHTS))(_nk, _node_idx) = (*_nn->matrix(WEIGHTS))(_nk, _node_idx) + (*_nn->matrix(DELTAS))(0, _node_idx);
+					}
+				}
+				
 				return zpt::json::floating(_sn);
 			}
 		);
@@ -119,6 +118,15 @@ double gdw::NNLayer::learning_rate() {
 
 void gdw::NNLayer::learning_rate(double _learning_rate) {
 	this->__learning_rate = _learning_rate;
+}
+
+double* gdw::NNLayer::weight_generation_limits() {
+	return this->__weight_random_limits;
+}
+
+void gdw::NNLayer::weight_generation_limits(double _lower, double _higher) {
+	this->__weight_random_limits[0] = _lower;
+	this->__weight_random_limits[1] = _higher;
 }
 
 gdw::mat_ptr gdw::NNLayer::matrix(gdw::index_t _which) {
@@ -212,9 +220,14 @@ void gdw::NNLayer::wire(gdw::index_t _neuron, zpt::json _inbound) {
 
 	std::random_device _rd;
 	std::mt19937 _gen(_rd());
-	std::uniform_real_distribution<double> _dis(-0.05, 0.05);		
+	std::uniform_real_distribution<double> _dis(this->__weight_random_limits[0], this->__weight_random_limits[1]);
 	for (auto _source : _inbound->arr()) {
-		(*this->__matrix[WEIGHTS])(((gdw::index_t) _source), _neuron) =  _dis(_gen);
+		double _weight = 0;
+		do {
+			_weight = _dis(_gen);
+		}
+		while(_weight == 0);
+		(*this->__matrix[WEIGHTS])(((gdw::index_t) _source), _neuron) = _weight;
 	}
 }
 
@@ -281,9 +294,10 @@ void gdw::NNLayer::snapshot(std::ostream _output_stream) {
 	_output_stream << this->snapshot() << flush;
 }
 
-void gdw::NNLayer::train(zpt::json _input, zpt::json _expected_output) {
+zpt::json gdw::NNLayer::train(zpt::json _input, zpt::json _expected_output) {
 	zpt::json _classification = this->classify(_input);
 	this->adjust(_input, _expected_output);
+	return _classification;
 }
 
 zpt::json gdw::NNLayer::classify(zpt::json _input) {
@@ -294,6 +308,7 @@ zpt::json gdw::NNLayer::classify(zpt::json _input) {
 	
 	for (auto _node : this->__network["nodes"]->arr()) {
 		if ((bool) _node["is_input"]) {
+			(*this->__matrix[UNITS])(0, _node_idx) = _input[_n];
 			(*this->__matrix[OUTPUTS])(0, _node_idx) = _input[_n];
 			_n++;
 			_downstream = arma::unique(arma::join_cols(_downstream, arma::find(this->__matrix[WEIGHTS]->row(_node_idx))));
@@ -318,16 +333,19 @@ zpt::json gdw::NNLayer::classify(arma::uvec& _to_process) {
 		zpt::lambda _fn_net = (_node["lambdas"]["value"]->type() == zpt::JSLambda ? _node["lambdas"]["value"]->lbd() : this->__network["defaults"]["lambdas"]["value"]->lbd());
 		zpt::json _value = _fn_net(_value_args, zpt::context(this));
 
-		zpt::json _threshold_args({ _value });
-		zpt::lambda _fn_output = (_node["lambdas"]["threshold"]->type() == zpt::JSLambda ?_node["lambdas"]["threshold"]->lbd() : this->__network["defaults"]["lambdas"]["threshold"]->lbd());
-		double _output = (double) _fn_output(_threshold_args, zpt::context(this));
-		
-		(*this->__matrix[OUTPUTS])(0, _node_idx) = _output;
+		(*this->__matrix[UNITS])(0, _node_idx) = _value;
 		
 		if ((bool) _node["is_output"]) {
+			(*this->__matrix[OUTPUTS])(0, _node_idx) = _value;
 			_return << _value;
 		}
 		else {
+			zpt::json _threshold_args({ _value });
+			zpt::lambda _fn_output = (_node["lambdas"]["threshold"]->type() == zpt::JSLambda ?_node["lambdas"]["threshold"]->lbd() : this->__network["defaults"]["lambdas"]["threshold"]->lbd());
+			double _output = (double) _fn_output(_threshold_args, zpt::context(this));
+		
+			(*this->__matrix[OUTPUTS])(0, _node_idx) = _output;
+			
 			_downstream = arma::unique(arma::join_cols(_downstream, arma::find(this->__matrix[WEIGHTS]->row(_node_idx))));
 		}
 	}
@@ -360,17 +378,16 @@ void gdw::NNLayer::adjust(zpt::json _input, zpt::json _expected_output) {
 }
 
 void gdw::NNLayer::adjust(arma::uvec& _to_process) {
-	gdw::index_t _node_idx = 0;
 	arma::uvec _upstream;
 	
-	for (auto _node : this->__network["nodes"]->arr()) {
+	for (gdw::index_t _node_idx : _to_process) {
+		zpt::json _node = this->__network["nodes"][_node_idx];
 		zpt::json _error_args({ _node_idx, 0 });
 		zpt::lambda _fn_error = (_node["lambdas"]["backpropagation"]->type() == zpt::JSLambda ? _node["lambdas"]["backpropagation"]->lbd() : this->__network["defaults"]["lambdas"]["backpropagation"]->lbd());
 		zpt::json _value = _fn_error(_error_args, zpt::context(this));
 		if (!((bool) _node["is_input"])) {
 			_upstream = arma::unique(arma::join_cols(_upstream, arma::find(this->__matrix[WEIGHTS]->col(_node_idx))));
 		}
-		_node_idx++;
 	}
 
 	if (_upstream.size() != 0) {
