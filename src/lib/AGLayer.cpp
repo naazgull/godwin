@@ -21,35 +21,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <godwin/NNLayer.h>
+#include <godwin/AGLayer.h>
 #include <random>
 
-gdw::neural_net::neural_net() : std::shared_ptr< gdw::NNLayer >(new gdw::NNLayer()) {
+gdw::acyclic_graph::acyclic_graph() : std::shared_ptr< gdw::AGLayer >(new gdw::AGLayer()) {
 }
 
-gdw::neural_net::neural_net(zpt::json _sizes) : std::shared_ptr< gdw::NNLayer >(new gdw::NNLayer(_sizes)) {
+gdw::acyclic_graph::acyclic_graph(zpt::json _sizes) : std::shared_ptr< gdw::AGLayer >(new gdw::AGLayer(_sizes)) {
 }
 
-gdw::neural_net::neural_net(gdw::nn* _target) : std::shared_ptr< gdw::NNLayer >(_target) {
+gdw::acyclic_graph::acyclic_graph(gdw::ag* _target) : std::shared_ptr< gdw::AGLayer >(_target) {
 }
 
-gdw::neural_net::~neural_net() {
+gdw::acyclic_graph::~acyclic_graph() {
 }
 
-std::string gdw::NNLayer::__matrix_names[N_MATRIX] = { "weights", "outputs", "deltas", "sigmas", "units" };
+std::string gdw::AGLayer::__matrix_names[N_MATRIX] = { "weights", "outputs", "deltas", "sigmas", "units" };
 
-gdw::NNLayer::NNLayer() : __learning_rate(0.05), __weight_random_limits{ 0.01, 0.5 } {
+gdw::AGLayer::AGLayer() : __learning_rate(0.05), __weight_random_limits{ 0.01, 0.5 } {
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
 		this->__matrix.push_back(gdw::mat_ptr());
 	}
 	this->builtins();
-	this->set_value_lambda(zpt::lambda("gdw::nn::linear", 1));
-	this->set_threshold_lambda(zpt::lambda("gdw::nn::sigmoid", 1));
-	this->set_error_delta_lambda(zpt::lambda("gdw::nn::gradient_descent::deltas", 2));
-	this->set_weight_adjust_lambda(zpt::lambda("gdw::nn::gradient_descent::weights", 1));
+	this->set_value_lambda(zpt::lambda("gdw::ag::linear", 1));
+	this->set_threshold_lambda(zpt::lambda("gdw::ag::sigmoid", 1));
+	this->set_error_delta_lambda(zpt::lambda("gdw::ag::gradient_descent::deltas", 2));
+	this->set_weight_adjust_lambda(zpt::lambda("gdw::ag::gradient_descent::weights", 1));
 }
 
-gdw::NNLayer::NNLayer(zpt::json _sizes) : gdw::NNLayer() {
+gdw::AGLayer::AGLayer(zpt::json _sizes) : gdw::AGLayer() {
 	assertz(_sizes->type() == zpt::JSArray, "'_sizes' parameter is not a valid array", 412, 0);
 	size_t _l = 0;
 	std::vector< std::tuple< gdw::index_t, size_t > > _limits;
@@ -72,128 +72,128 @@ gdw::NNLayer::NNLayer(zpt::json _sizes) : gdw::NNLayer() {
 	}
 }
 
-gdw::NNLayer::~NNLayer() {
+gdw::AGLayer::~AGLayer() {
 }
 
-zpt::json gdw::NNLayer::network() {
-	return this->__network;
+zpt::json gdw::AGLayer::graph() {
+	return this->__graph;
 }
 
-double gdw::NNLayer::learning_rate() {
+double gdw::AGLayer::learning_rate() {
 	return this->__learning_rate;
 }
 
-void gdw::NNLayer::learning_rate(double _learning_rate) {
+void gdw::AGLayer::learning_rate(double _learning_rate) {
 	this->__learning_rate = _learning_rate;
 }
 
-double* gdw::NNLayer::weight_generation_limits() {
+double* gdw::AGLayer::weight_generation_limits() {
 	return this->__weight_random_limits;
 }
 
-void gdw::NNLayer::weight_generation_limits(double _lower, double _higher) {
+void gdw::AGLayer::weight_generation_limits(double _lower, double _higher) {
 	this->__weight_random_limits[0] = _lower;
 	this->__weight_random_limits[1] = _higher;
 }
 
-gdw::mat_ptr gdw::NNLayer::matrix(gdw::index_t _which) {
+gdw::mat_ptr gdw::AGLayer::matrix(gdw::index_t _which) {
 	return this->__matrix[_which];
 }
 
-void gdw::NNLayer::set_value_lambda(zpt::lambda _function) {
-	if (!this->__network->ok()) {
-		this->__network = zpt::json::object();
+void gdw::AGLayer::set_value_lambda(zpt::lambda _function) {
+	if (!this->__graph->ok()) {
+		this->__graph = zpt::json::object();
 	}
-	if (!this->__network["defaults"]->ok()) {
-		this->__network << "defaults" << zpt::json::object();
+	if (!this->__graph["defaults"]->ok()) {
+		this->__graph << "defaults" << zpt::json::object();
 	}
-	if (!this->__network["defaults"]["lambdas"]->ok()) {
-		this->__network["defaults"] << "lambdas" << zpt::json::object();
+	if (!this->__graph["defaults"]["lambdas"]->ok()) {
+		this->__graph["defaults"] << "lambdas" << zpt::json::object();
 	}
-	this->__network["defaults"]["lambdas"] << "value" << zpt::json::lambda(_function);
+	this->__graph["defaults"]["lambdas"] << "value" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_value_lambda(gdw::index_t _neuron, zpt::lambda _function) {
-	assertz(this->__network["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
-	if (!this->__network["nodes"][_neuron]["lambdas"]->ok()) {
-		this->__network["nodes"][_neuron] << "lambdas" << zpt::json::object();
+void gdw::AGLayer::set_value_lambda(gdw::index_t _neuron, zpt::lambda _function) {
+	assertz(this->__graph["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
+	if (!this->__graph["nodes"][_neuron]["lambdas"]->ok()) {
+		this->__graph["nodes"][_neuron] << "lambdas" << zpt::json::object();
 	}
-	this->__network["nodes"][_neuron]["lambdas"] << "value" << zpt::json::lambda(_function);
+	this->__graph["nodes"][_neuron]["lambdas"] << "value" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_threshold_lambda(zpt::lambda _function) {
-	if (!this->__network->ok()) {
-		this->__network = zpt::json::object();
+void gdw::AGLayer::set_threshold_lambda(zpt::lambda _function) {
+	if (!this->__graph->ok()) {
+		this->__graph = zpt::json::object();
 	}
-	if (!this->__network["defaults"]->ok()) {
-		this->__network << "defaults" << zpt::json::object();
+	if (!this->__graph["defaults"]->ok()) {
+		this->__graph << "defaults" << zpt::json::object();
 	}
-	if (!this->__network["defaults"]["lambdas"]->ok()) {
-		this->__network["defaults"] << "lambdas" << zpt::json::object();
+	if (!this->__graph["defaults"]["lambdas"]->ok()) {
+		this->__graph["defaults"] << "lambdas" << zpt::json::object();
 	}
-	this->__network["defaults"]["lambdas"] << "threshold" << zpt::json::lambda(_function);
+	this->__graph["defaults"]["lambdas"] << "threshold" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_threshold_lambda(gdw::index_t _neuron, zpt::lambda _function) {
-	assertz(this->__network["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
-	if (!this->__network["nodes"][_neuron]["lambdas"]->ok()) {
-		this->__network["nodes"][_neuron] << "lambdas" << zpt::json::object();
+void gdw::AGLayer::set_threshold_lambda(gdw::index_t _neuron, zpt::lambda _function) {
+	assertz(this->__graph["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
+	if (!this->__graph["nodes"][_neuron]["lambdas"]->ok()) {
+		this->__graph["nodes"][_neuron] << "lambdas" << zpt::json::object();
 	}
-	this->__network["nodes"][_neuron]["lambdas"] << "threshold" << zpt::json::lambda(_function);
+	this->__graph["nodes"][_neuron]["lambdas"] << "threshold" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_error_delta_lambda(zpt::lambda _function) {
-	if (!this->__network->ok()) {
-		this->__network = zpt::json::object();
+void gdw::AGLayer::set_error_delta_lambda(zpt::lambda _function) {
+	if (!this->__graph->ok()) {
+		this->__graph = zpt::json::object();
 	}
-	if (!this->__network["defaults"]->ok()) {
-		this->__network << "defaults" << zpt::json::object();
+	if (!this->__graph["defaults"]->ok()) {
+		this->__graph << "defaults" << zpt::json::object();
 	}
-	if (!this->__network["defaults"]["lambdas"]->ok()) {
-		this->__network["defaults"] << "lambdas" << zpt::json::object();
+	if (!this->__graph["defaults"]["lambdas"]->ok()) {
+		this->__graph["defaults"] << "lambdas" << zpt::json::object();
 	}
-	this->__network["defaults"]["lambdas"] << "deltas" << zpt::json::lambda(_function);
+	this->__graph["defaults"]["lambdas"] << "deltas" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_error_delta_lambda(gdw::index_t _neuron, zpt::lambda _function) {
-	assertz(this->__network["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
-	if (!this->__network["nodes"][_neuron]["lambdas"]->ok()) {
-		this->__network["nodes"][_neuron] << "lambdas" << zpt::json::object();
+void gdw::AGLayer::set_error_delta_lambda(gdw::index_t _neuron, zpt::lambda _function) {
+	assertz(this->__graph["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
+	if (!this->__graph["nodes"][_neuron]["lambdas"]->ok()) {
+		this->__graph["nodes"][_neuron] << "lambdas" << zpt::json::object();
 	}
-	this->__network["nodes"][_neuron]["lambdas"] << "deltas" << zpt::json::lambda(_function);
+	this->__graph["nodes"][_neuron]["lambdas"] << "deltas" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_weight_adjust_lambda(zpt::lambda _function) {
-	if (!this->__network->ok()) {
-		this->__network = zpt::json::object();
+void gdw::AGLayer::set_weight_adjust_lambda(zpt::lambda _function) {
+	if (!this->__graph->ok()) {
+		this->__graph = zpt::json::object();
 	}
-	if (!this->__network["defaults"]->ok()) {
-		this->__network << "defaults" << zpt::json::object();
+	if (!this->__graph["defaults"]->ok()) {
+		this->__graph << "defaults" << zpt::json::object();
 	}
-	if (!this->__network["defaults"]["lambdas"]->ok()) {
-		this->__network["defaults"] << "lambdas" << zpt::json::object();
+	if (!this->__graph["defaults"]["lambdas"]->ok()) {
+		this->__graph["defaults"] << "lambdas" << zpt::json::object();
 	}
-	this->__network["defaults"]["lambdas"] << "weights" << zpt::json::lambda(_function);
+	this->__graph["defaults"]["lambdas"] << "weights" << zpt::json::lambda(_function);
 }
 
-void gdw::NNLayer::set_weight_adjust_lambda(gdw::index_t _neuron, zpt::lambda _function) {
-	assertz(this->__network["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
-	if (!this->__network["nodes"][_neuron]["lambdas"]->ok()) {
-		this->__network["nodes"][_neuron] << "lambdas" << zpt::json::object();
+void gdw::AGLayer::set_weight_adjust_lambda(gdw::index_t _neuron, zpt::lambda _function) {
+	assertz(this->__graph["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
+	if (!this->__graph["nodes"][_neuron]["lambdas"]->ok()) {
+		this->__graph["nodes"][_neuron] << "lambdas" << zpt::json::object();
 	}
-	this->__network["nodes"][_neuron]["lambdas"] << "weights" << zpt::json::lambda(_function);
+	this->__graph["nodes"][_neuron]["lambdas"] << "weights" << zpt::json::lambda(_function);
 }
 
-gdw::index_t gdw::NNLayer::push(zpt::json _neuron, size_t _n_neurons) {
-	if (!this->__network->ok()) {
-		this->__network = zpt::json::object();
+gdw::index_t gdw::AGLayer::push(zpt::json _neuron, size_t _n_neurons) {
+	if (!this->__graph->ok()) {
+		this->__graph = zpt::json::object();
 	}
-	if (!this->__network["nodes"]->ok()) {
-		this->__network << "nodes" << zpt::json::array();
+	if (!this->__graph["nodes"]->ok()) {
+		this->__graph << "nodes" << zpt::json::array();
 	}
-	const size_t _position = this->__network["nodes"]->arr()->size();
+	const size_t _position = this->__graph["nodes"]->arr()->size();
 	for (size_t _n = 0; _n != _n_neurons; _n++) {
-		this->__network["nodes"] << _neuron;
+		this->__graph["nodes"] << _neuron;
 	}
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
 		bool _square_matrix = (_m == WEIGHTS || _m == DELTAS);
@@ -203,8 +203,8 @@ gdw::index_t gdw::NNLayer::push(zpt::json _neuron, size_t _n_neurons) {
 	return _position;
 }
 
-void gdw::NNLayer::wire(gdw::index_t _neuron, zpt::json _inbound) {
-	assertz(this->__network["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
+void gdw::AGLayer::wire(gdw::index_t _neuron, zpt::json _inbound) {
+	assertz(this->__graph["nodes"][_neuron]->ok(), "neuron index does not match any existant", 412, 0);
 	assertz(_inbound->type() == zpt::JSArray, "source node list '_inbound' must be a JSON array", 412, 0);
 	
 	std::random_device _rd;
@@ -221,13 +221,13 @@ void gdw::NNLayer::wire(gdw::index_t _neuron, zpt::json _inbound) {
 	}
 }
 
-void gdw::NNLayer::wire(zpt::json _network) {
+void gdw::AGLayer::wire(zpt::json _network) {
 	assertz(_network->type() == zpt::JSObject && _network["layers"]->type() == zpt::JSArray, "provided JSON object not in a recognizable format", 412, 0);
-	this->__network = _network;
+	this->__graph = _network;
 	
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
-		if (this->__network[gdw::NNLayer::__matrix_names[_m]]->type() == zpt::JSString) {
-			std::string _matrix_str(this->__network[gdw::NNLayer::__matrix_names[_m]]->str());
+		if (this->__graph[gdw::AGLayer::__matrix_names[_m]]->type() == zpt::JSString) {
+			std::string _matrix_str(this->__graph[gdw::AGLayer::__matrix_names[_m]]->str());
 			zpt::base64::decode(_matrix_str);
 			std::istringstream _iss(_matrix_str);
 			this->__matrix[_m]->load(_iss, arma::arma_binary);
@@ -236,14 +236,14 @@ void gdw::NNLayer::wire(zpt::json _network) {
 	}
 }
 
-void gdw::NNLayer::wire(std::string _network_serialized) {
+void gdw::AGLayer::wire(std::string _network_serialized) {
 	zpt::json _network(_network_serialized);
 	assertz(_network->type() == zpt::JSObject && _network["layers"]->type() == zpt::JSArray, "provided JSON object not in a recognizable format", 412, 0);
-	this->__network = _network;
+	this->__graph = _network;
 	
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
-		if (this->__network[gdw::NNLayer::__matrix_names[_m]]->type() == zpt::JSString) {
-			std::string _matrix_str(this->__network[gdw::NNLayer::__matrix_names[_m]]->str());
+		if (this->__graph[gdw::AGLayer::__matrix_names[_m]]->type() == zpt::JSString) {
+			std::string _matrix_str(this->__graph[gdw::AGLayer::__matrix_names[_m]]->str());
 			zpt::base64::decode(_matrix_str);
 			std::istringstream _iss(_matrix_str);
 			this->__matrix[_m]->load(_iss, arma::arma_binary);
@@ -252,15 +252,15 @@ void gdw::NNLayer::wire(std::string _network_serialized) {
 	}
 }
 
-void gdw::NNLayer::wire(std::istream _input_stream) {
+void gdw::AGLayer::wire(std::istream _input_stream) {
 	zpt::json _network;
 	_input_stream >> _network;
 	assertz(_network->type() == zpt::JSObject && _network["layers"]->type() == zpt::JSArray, "provided JSON object not in a recognizable format", 412, 0);
-	this->__network = _network;
+	this->__graph = _network;
 	
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
-		if (this->__network[gdw::NNLayer::__matrix_names[_m]]->type() == zpt::JSString) {
-			std::string _matrix_str(this->__network[gdw::NNLayer::__matrix_names[_m]]->str());
+		if (this->__graph[gdw::AGLayer::__matrix_names[_m]]->type() == zpt::JSString) {
+			std::string _matrix_str(this->__graph[gdw::AGLayer::__matrix_names[_m]]->str());
 			zpt::base64::decode(_matrix_str);
 			std::istringstream _iss(_matrix_str);
 			this->__matrix[_m]->load(_iss, arma::arma_binary);
@@ -269,35 +269,35 @@ void gdw::NNLayer::wire(std::istream _input_stream) {
 	}
 }
 
-std::string gdw::NNLayer::snapshot() {
+std::string gdw::AGLayer::snapshot() {
 	for (size_t _m = 0; _m != N_MATRIX; _m++) {
 		std::ostringstream _oss;
 		this->__matrix[_m]->save(_oss, arma::arma_binary);
 		std::string _matrix_str(_oss.str());
 		zpt::base64::encode(_matrix_str);
-		this->__network << gdw::NNLayer::__matrix_names[_m] << _matrix_str;
+		this->__graph << gdw::AGLayer::__matrix_names[_m] << _matrix_str;
 	}
-	return std::string(this->__network);
+	return std::string(this->__graph);
 }
 
-void gdw::NNLayer::snapshot(std::ostream _output_stream) {
+void gdw::AGLayer::snapshot(std::ostream _output_stream) {
 	_output_stream << this->snapshot() << flush;
 }
 
-zpt::json gdw::NNLayer::train(zpt::json _input, zpt::json _expected_output) {
+zpt::json gdw::AGLayer::train(zpt::json _input, zpt::json _expected_output) {
 	zpt::json _classification = this->classify(_input);
 	this->calculate_deltas(_input, _expected_output);
 	this->adjust_weights(_input);
 	return _classification;
 }
 
-zpt::json gdw::NNLayer::classify(zpt::json _input) {
+zpt::json gdw::AGLayer::classify(zpt::json _input) {
 	zpt::json _return = zpt::json::array();
 	gdw::index_t _node_idx = 0;
 	gdw::index_t _n = 0;
 	arma::uvec _downstream;
 	
-	for (auto _node : this->__network["nodes"]->arr()) {
+	for (auto _node : this->__graph["nodes"]->arr()) {
 		if ((bool) _node["is_input"]) {
 			(*this->__matrix[UNITS])(0, _node_idx) = _input[_n];
 			(*this->__matrix[OUTPUTS])(0, _node_idx) = _input[_n];
@@ -315,15 +315,15 @@ zpt::json gdw::NNLayer::classify(zpt::json _input) {
 	return zpt::undefined;
 }
 
-zpt::json gdw::NNLayer::classify(arma::uvec& _to_process) {
+zpt::json gdw::AGLayer::classify(arma::uvec& _to_process) {
 	zpt::json _return = zpt::json::array();
 	arma::uvec _downstream;
 
 	for (auto _node_idx : _to_process) {
-		zpt::json _node = this->__network["nodes"][(size_t) _node_idx];
+		zpt::json _node = this->__graph["nodes"][(size_t) _node_idx];
 		
 		zpt::json _value_args({ _node_idx });
-		zpt::lambda _fn_net = (_node["lambdas"]["value"]->type() == zpt::JSLambda ? _node["lambdas"]["value"]->lbd() : this->__network["defaults"]["lambdas"]["value"]->lbd());
+		zpt::lambda _fn_net = (_node["lambdas"]["value"]->type() == zpt::JSLambda ? _node["lambdas"]["value"]->lbd() : this->__graph["defaults"]["lambdas"]["value"]->lbd());
 		zpt::json _value = _fn_net(_value_args, zpt::context(this));
 
 		(*this->__matrix[UNITS])(0, _node_idx) = _value;
@@ -334,7 +334,7 @@ zpt::json gdw::NNLayer::classify(arma::uvec& _to_process) {
 		}
 		else {
 			zpt::json _threshold_args({ _value });
-			zpt::lambda _fn_output = (_node["lambdas"]["threshold"]->type() == zpt::JSLambda ?_node["lambdas"]["threshold"]->lbd() : this->__network["defaults"]["lambdas"]["threshold"]->lbd());
+			zpt::lambda _fn_output = (_node["lambdas"]["threshold"]->type() == zpt::JSLambda ?_node["lambdas"]["threshold"]->lbd() : this->__graph["defaults"]["lambdas"]["threshold"]->lbd());
 			double _output = (double) _fn_output(_threshold_args, zpt::context(this));
 		
 			(*this->__matrix[OUTPUTS])(0, _node_idx) = _output;
@@ -349,15 +349,15 @@ zpt::json gdw::NNLayer::classify(arma::uvec& _to_process) {
 	return _return;
 }
 
-void gdw::NNLayer::calculate_deltas(zpt::json _input, zpt::json _expected_output) {
+void gdw::AGLayer::calculate_deltas(zpt::json _input, zpt::json _expected_output) {
 	gdw::index_t _node_idx = 0;
 	gdw::index_t _n = 0;
 	arma::uvec _upstream;
 	
-	for (auto _node : this->__network["nodes"]->arr()) {
+	for (auto _node : this->__graph["nodes"]->arr()) {
 		if ((bool) _node["is_output"]) {
 			zpt::json _error_args({ _node_idx, _expected_output[_n] });
-			zpt::lambda _fn_error = (_node["lambdas"]["deltas"]->type() == zpt::JSLambda ? _node["lambdas"]["deltas"]->lbd() : this->__network["defaults"]["lambdas"]["deltas"]->lbd());
+			zpt::lambda _fn_error = (_node["lambdas"]["deltas"]->type() == zpt::JSLambda ? _node["lambdas"]["deltas"]->lbd() : this->__graph["defaults"]["lambdas"]["deltas"]->lbd());
 			zpt::json _value = _fn_error(_error_args, zpt::context(this));
 			_n++;
 			_upstream = arma::unique(arma::join_cols(_upstream, arma::find(this->__matrix[WEIGHTS]->col(_node_idx))));			
@@ -370,13 +370,13 @@ void gdw::NNLayer::calculate_deltas(zpt::json _input, zpt::json _expected_output
 	}
 }
 
-void gdw::NNLayer::calculate_deltas(arma::uvec& _to_process) {
+void gdw::AGLayer::calculate_deltas(arma::uvec& _to_process) {
 	arma::uvec _upstream;
 	
 	for (gdw::index_t _node_idx : _to_process) {
-		zpt::json _node = this->__network["nodes"][_node_idx];
+		zpt::json _node = this->__graph["nodes"][_node_idx];
 		zpt::json _error_args({ _node_idx, 0 });
-		zpt::lambda _fn_error = (_node["lambdas"]["deltas"]->type() == zpt::JSLambda ? _node["lambdas"]["deltas"]->lbd() : this->__network["defaults"]["lambdas"]["deltas"]->lbd());
+		zpt::lambda _fn_error = (_node["lambdas"]["deltas"]->type() == zpt::JSLambda ? _node["lambdas"]["deltas"]->lbd() : this->__graph["defaults"]["lambdas"]["deltas"]->lbd());
 		zpt::json _value = _fn_error(_error_args, zpt::context(this));
 		if (!((bool) _node["is_input"])) {
 			_upstream = arma::unique(arma::join_cols(_upstream, arma::find(this->__matrix[WEIGHTS]->col(_node_idx))));
@@ -388,14 +388,14 @@ void gdw::NNLayer::calculate_deltas(arma::uvec& _to_process) {
 	}
 }
 
-void gdw::NNLayer::adjust_weights(zpt::json _input) {
+void gdw::AGLayer::adjust_weights(zpt::json _input) {
 	gdw::index_t _node_idx = 0;
 	arma::uvec _upstream;
 	
-	for (auto _node : this->__network["nodes"]->arr()) {
+	for (auto _node : this->__graph["nodes"]->arr()) {
 		if ((bool) _node["is_output"]) {
 			zpt::json _weight_args({ _node_idx });
-			zpt::lambda _fn_weights = (_node["lambdas"]["weights"]->type() == zpt::JSLambda ? _node["lambdas"]["weights"]->lbd() : this->__network["defaults"]["lambdas"]["weights"]->lbd());
+			zpt::lambda _fn_weights = (_node["lambdas"]["weights"]->type() == zpt::JSLambda ? _node["lambdas"]["weights"]->lbd() : this->__graph["defaults"]["lambdas"]["weights"]->lbd());
 			_fn_weights(_weight_args, zpt::context(this));
 
 			_upstream = arma::unique(arma::join_cols(_upstream, arma::find(this->__matrix[WEIGHTS]->col(_node_idx))));			
@@ -408,14 +408,14 @@ void gdw::NNLayer::adjust_weights(zpt::json _input) {
 	}
 }
 
-void gdw::NNLayer::adjust_weights(arma::uvec& _to_process) {
+void gdw::AGLayer::adjust_weights(arma::uvec& _to_process) {
 	arma::uvec _upstream;
 	
 	for (gdw::index_t _node_idx : _to_process) {
-		zpt::json _node = this->__network["nodes"][_node_idx];
+		zpt::json _node = this->__graph["nodes"][_node_idx];
 
 		zpt::json _weight_args({ _node_idx });
-		zpt::lambda _fn_weights = (_node["lambdas"]["weights"]->type() == zpt::JSLambda ? _node["lambdas"]["weights"]->lbd() : this->__network["defaults"]["lambdas"]["weights"]->lbd());
+		zpt::lambda _fn_weights = (_node["lambdas"]["weights"]->type() == zpt::JSLambda ? _node["lambdas"]["weights"]->lbd() : this->__graph["defaults"]["lambdas"]["weights"]->lbd());
 		_fn_weights(_weight_args, zpt::context(this));
 
 		if (!((bool) _node["is_input"])) {
@@ -428,11 +428,11 @@ void gdw::NNLayer::adjust_weights(arma::uvec& _to_process) {
 	}
 }
 
-void gdw::NNLayer::builtins() {
+void gdw::AGLayer::builtins() {
 	try {
-		zpt::lambda::add("gdw::nn::linear", 1,
+		zpt::lambda::add("gdw::ag::linear", 1,
 			[] (zpt::json _args, unsigned short _nargs, zpt::context _ctx) -> zpt::json {
-				gdw::nn* _nn = (gdw::nn*) _ctx->unpack();
+				gdw::ag* _nn = (gdw::ag*) _ctx->unpack();
 				gdw::index_t _node_idx = (gdw::index_t) _args[0];
 				std::cout << _nn->matrix(WEIGHTS)->col(_node_idx) << " ø " << endl << _nn->matrix(OUTPUTS)->row(0) << " = " << arma::dot(_nn->matrix(WEIGHTS)->col(_node_idx), _nn->matrix(OUTPUTS)->row(0)) << endl << flush;
 				return zpt::json::floating(arma::dot(_nn->matrix(WEIGHTS)->col(_node_idx), _nn->matrix(OUTPUTS)->row(0)));
@@ -442,7 +442,7 @@ void gdw::NNLayer::builtins() {
 	catch(zpt::AssertionException& _e) {
 	}
 	try {
-		zpt::lambda::add("gdw::nn::sigmoid", 1,
+		zpt::lambda::add("gdw::ag::sigmoid", 1,
 			[] (zpt::json _args, unsigned short _nargs, zpt::context _ctx) -> zpt::json {
 				return zpt::json::floating(1.0 / (double) (1.0 + std::exp(-_args[0]->dbl())));
 			}
@@ -451,11 +451,11 @@ void gdw::NNLayer::builtins() {
 	catch(zpt::AssertionException& _e) {
 	}
 	try {
-		zpt::lambda::add("gdw::nn::gradient_descent::deltas", 2,
+		zpt::lambda::add("gdw::ag::gradient_descent::deltas", 2,
 			[] (zpt::json _args, unsigned short _nargs, zpt::context _ctx) -> zpt::json {
-				gdw::nn* _nn = (gdw::nn*) _ctx->unpack();
+				gdw::ag* _nn = (gdw::ag*) _ctx->unpack();
 				gdw::index_t _node_idx = (gdw::index_t) _args[0];
-				zpt::json _node = _nn->network()["nodes"][_node_idx];
+				zpt::json _node = _nn->graph()["nodes"][_node_idx];
 
 				double _sn = 0;
 				double _on = (*_nn->matrix(OUTPUTS))(0, _node_idx);
@@ -482,11 +482,11 @@ void gdw::NNLayer::builtins() {
 	catch(zpt::AssertionException& _e) {
 	}	
 	try {
-		zpt::lambda::add("gdw::nn::gradient_descent::weights", 1,
+		zpt::lambda::add("gdw::ag::gradient_descent::weights", 1,
 			[] (zpt::json _args, unsigned short _nargs, zpt::context _ctx) -> zpt::json {
-				gdw::nn* _nn = (gdw::nn*) _ctx->unpack();
+				gdw::ag* _nn = (gdw::ag*) _ctx->unpack();
 				gdw::index_t _node_idx = (gdw::index_t) _args[0];
-				zpt::json _node = _nn->network()["nodes"][_node_idx];
+				zpt::json _node = _nn->graph()["nodes"][_node_idx];
 
 				if (!((bool) _node["is_input"])) {
 					arma::uvec _upstream = arma::find(_nn->matrix(WEIGHTS)->col(_node_idx));

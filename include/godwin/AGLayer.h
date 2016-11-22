@@ -40,26 +40,26 @@ using namespace __gnu_cxx;
 
 namespace gdw {
 
-	class NNLayer;
+	class AGLayer;
 
 	typedef size_t index_t;
-	typedef gdw::NNLayer nn;
+	typedef gdw::AGLayer ag;
 	
-	class neural_net : public std::shared_ptr< gdw::NNLayer > {
+	class acyclic_graph : public std::shared_ptr< gdw::AGLayer > {
 	public:
-		neural_net();
-		neural_net(zpt::json _sizes);
-		neural_net(gdw::NNLayer* _target);
-		virtual ~neural_net();
+		acyclic_graph();
+		acyclic_graph(zpt::json _sizes);
+		acyclic_graph(gdw::AGLayer* _target);
+		virtual ~acyclic_graph();
 	};
 	
-	class NNLayer {
+	class AGLayer {
 	public:
-		NNLayer();
-		NNLayer(zpt::json _sizes);
-		virtual ~NNLayer();
+		AGLayer();
+		AGLayer(zpt::json _sizes);
+		virtual ~AGLayer();
 
-		virtual zpt::json network();
+		virtual zpt::json graph();
 		virtual gdw::mat_ptr matrix(gdw::index_t _which);
 		virtual double learning_rate();
 		virtual void learning_rate(double _learning_rate);
@@ -91,7 +91,7 @@ namespace gdw {
 		static std::string __matrix_names[N_MATRIX];
 
 	private:
-		zpt::json __network;
+		zpt::json __graph;
 		std::vector< gdw::mat_ptr > __matrix;
 		double __learning_rate;
 		double __weight_random_limits[2];

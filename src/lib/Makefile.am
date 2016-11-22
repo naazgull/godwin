@@ -6,7 +6,8 @@ libgodwin_la_CPPFLAGS = -std=c++11 -Wall -I../../include
 
 libgodwin_la_SOURCES = \
 Matrix.cpp \
-NNLayer.cpp
+NNLayer.cpp \
+AGLayer.cpp
 
 bin_PROGRAMS = gdw-test
 
