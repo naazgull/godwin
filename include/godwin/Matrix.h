@@ -53,4 +53,9 @@ namespace gdw {
 
 		virtual ~mat_ptr();
 	};
+
+	namespace matrix {
+		zpt::json from_matrix(arma::mat _matrix); 
+		arma::mat to_matrix(zpt::json _array); 
+	}
 }

@@ -31,19 +31,14 @@ using namespace std;
 using namespace __gnu_cxx;
 #endif
 
-#define N_MATRIX 5
-#define WEIGHTS 0
-#define OUTPUTS 1
-#define DELTAS 2
-#define SIGMAS 3
-#define UNITS 4
-
 namespace gdw {
 
 	class NNLayer;
 
 	typedef size_t index_t;
 	typedef gdw::NNLayer nn;
+	typedef arma::field< arma::mat > layer;
+	typedef std::tuple< gdw::layer, gdw::layer > layer_delta;
 	
 	class neural_net : public std::shared_ptr< gdw::NNLayer > {
 	public:
@@ -59,25 +54,24 @@ namespace gdw {
 		NNLayer(zpt::json _sizes);
 		virtual ~NNLayer();
 
+		virtual void set_size(zpt::json _sizes);
+			
 		virtual zpt::json network();
-		virtual gdw::mat_ptr matrix(gdw::index_t _which);
+		virtual gdw::layer& biases();
+		virtual gdw::layer& b();
+		virtual gdw::layer& weights();
+		virtual gdw::layer& w();
 		virtual double learning_rate();
 		virtual void learning_rate(double _learning_rate);
-		virtual double* weight_generation_limits();
-		virtual void weight_generation_limits(double _lower, double _higher);
+		virtual void random_limits(double _min, double _max);
 		
-		virtual void set_value_lambda(zpt::lambda _function);
-		virtual void set_value_lambda(gdw::index_t _neuron, zpt::lambda _function);
-		virtual void set_threshold_lambda(zpt::lambda _function);
-		virtual void set_threshold_lambda(gdw::index_t _neuron, zpt::lambda _function);	
-		virtual void set_error_delta_lambda(zpt::lambda _function);
-		virtual void set_error_delta_lambda(gdw::index_t _neuron, zpt::lambda _function);
-		virtual void set_weight_adjust_lambda(zpt::lambda _function);
-		virtual void set_weight_adjust_lambda(gdw::index_t _neuron, zpt::lambda _function);
+		virtual void set_feed_forward_lambda(zpt::lambda _function);
+		virtual void set_feed_forward_lambda(gdw::index_t _layer, zpt::lambda _function);
+		virtual void set_back_propagate_lambda(zpt::lambda _function);
+		virtual void set_back_propagate_lambda(gdw::index_t _layer, zpt::lambda _function);
 
-		virtual gdw::index_t push(zpt::json _neuron, size_t _n_neurons = 1);
+		virtual void push(gdw::index_t _layer, std::size_t _n_neurons);
 		
-		virtual void wire(gdw::index_t _neuron, zpt::json _inbound);
 		virtual void wire(zpt::json _network);
 		virtual void wire(std::string _network_serialized);
 		virtual void wire(std::istream _input_stream);
@@ -85,24 +79,22 @@ namespace gdw {
 		virtual std::string snapshot();
 		virtual void snapshot(std::ostream _output_stream);
 
-		virtual zpt::json train(zpt::json _input, zpt::json _expected_output);
-		virtual zpt::json classify(zpt::json _input);
-
-		static std::string __matrix_names[N_MATRIX];
-
+		virtual zpt::json train(zpt::json _batch, std::size_t _training_batch_size, std::size_t _n_epochs);
+		virtual zpt::json feed_forward(zpt::json _input);
+	
 	private:
 		zpt::json __network;
-		std::vector< gdw::mat_ptr > __matrix;
+		gdw::layer __w;
+		gdw::layer __b;
 		double __learning_rate;
-		double __weight_random_limits[2];
+		double __max_random;
+		double __min_random;
 		
-		virtual zpt::json classify(arma::uvec& _to_process);
-		virtual void calculate_deltas(zpt::json _input, zpt::json _expected_output);
-		virtual void calculate_deltas(arma::uvec& _to_process);
-		virtual void adjust_weights(zpt::json _input);
-		virtual void adjust_weights(arma::uvec& _to_process);
+		virtual gdw::layer_delta back_propagate(zpt::json _input, zpt::json _expected_output);
 		virtual void builtins();
 
 	};
 	
+	arma::mat sigmoid(arma::mat _z);
+	arma::mat sigmoid_prime(arma::mat _z);
 }

@@ -56,3 +56,45 @@ gdw::mat_ptr::mat_ptr(const arma::mat& _other) : std::shared_ptr< arma::mat >(ne
 gdw::mat_ptr::~mat_ptr() {
 }
 
+zpt::json gdw::matrix::from_matrix(arma::mat _matrix) {
+	zpt::json _return = zpt::json::array();
+	if (_matrix.n_rows == 1) {
+		_matrix.row(0).for_each( [ &_return ] (double& _element) { _return << _element; });
+	}
+	else {
+		_matrix.each_row(
+			[ &_return ] (arma::rowvec& _row) {
+				zpt::json _r = zpt::json::array();
+				_return << _r;
+				_row.for_each( [ &_r ] (double& _element) { _r << _element; });
+			}
+		);
+	}
+	return _return;
+}
+
+arma::mat gdw::matrix::to_matrix(zpt::json _array) {
+	assertz(_array->type() == zpt::JSArray, "'_array' parameter must be a JSON array", 412, 0);
+	if (_array[0]->type() == zpt::JSArray) {
+		arma::mat _return(_array->arr()->size(), _array[0]->arr()->size());
+		size_t _idx = 0;
+		for (auto _row : _array->arr()) {
+			size_t _kdx = 0;
+			for (auto _element : _row->arr()) {
+				_return(_idx, _kdx) = (double) _element;
+				_kdx++;
+			}
+			_idx++;
+		}
+		return _return;
+	}
+	else {
+		arma::mat _return(1, _array->arr()->size());
+		size_t _idx = 0;
+		for (auto _element : _array->arr()) {
+			_return(0, _idx) = (double) _element;
+			_idx++;
+		}
+		return _return;
+	}
+}
