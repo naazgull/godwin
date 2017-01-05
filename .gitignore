@@ -34,5 +34,5 @@ deps/
 .sublime*
 upstream
 packages
-
 src/lib/gdw-test
+*.tar.gz

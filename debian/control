@@ -7,6 +7,6 @@ Build-Depends: debhelper (>= 9)
 
 Package: godwin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libmagic1, openssl, zapata-base (>=0.9), zapata-json (>=0.9), zapata-http (>=0.9), zapata-rest(>=0.9)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libmagic1, openssl, zapata-base (>=0.9), zapata-json (>=0.9), zapata-http (>=0.9), zapata-rest(>=0.9), libarmadillo-dev
 Description: godwin
  Provides godwin
