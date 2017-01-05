@@ -1,6 +1,6 @@
 
 AC_PREREQ(2.59)
-AC_INIT(godwin, 0.0.1-1, naazgull@dfz.pt)
+AC_INIT(godwin, 0.9.3-1, naazgull@dfz.pt)
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])

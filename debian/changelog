@@ -1,3 +1,9 @@
+godwin (0.9.3-1) trusty; urgency=medium
+
+  * Version bump
+
+ -- n@zgul <naazgull@dfz.pt>  Thu, 05 Jan 2017 01:19:22 +0000
+
 godwin (0.0.1-1) trusty; urgency=medium
 
   * Initial release.

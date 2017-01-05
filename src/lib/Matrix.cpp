@@ -74,7 +74,7 @@ zpt::json gdw::matrix::from_matrix(arma::mat _matrix) {
 }
 
 arma::mat gdw::matrix::to_matrix(zpt::json _array) {
-	assertz(_array->type() == zpt::JSArray, "'_array' parameter must be a JSON array", 412, 0);
+	assertz(_array->type() == zpt::JSArray, std::string("'_array' parameter must be a JSON array, found: ") + std::string(_array), 412, 0);
 	if (_array[0]->type() == zpt::JSArray) {
 		arma::mat _return(_array->arr()->size(), _array[0]->arr()->size());
 		size_t _idx = 0;

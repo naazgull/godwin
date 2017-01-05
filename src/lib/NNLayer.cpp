@@ -42,7 +42,7 @@ gdw::NNLayer::NNLayer() : __learning_rate(0.05), __max_random(0.05), __min_rando
 	this->__network = {
 		"lambdas", {
 			"defaults", {
-				"train", zpt::lambda("gdw::nn::train::gradient_descent", 2),
+				"train", zpt::lambda("gdw::nn::train::gradient_descent", 3),
 				"feed_forward", zpt::lambda("gdw::nn::feed_forward::sigmoid", 1),
 				"back_propagate", zpt::lambda("gdw::nn::back_propagate::gradient_descent", 2)
 			}
@@ -275,7 +275,7 @@ void gdw::NNLayer::builtins() {
 					std::srand(std::time(nullptr));
 					std::random_shuffle(_training_set->arr()->begin(), _training_set->arr()->end());
 					std::vector< zpt::json > _batch(_training_set->arr()->begin(), _training_set->arr()->begin() + _batch_size);
-				
+
 					gdw::layer _nabla_b(1, _nn->b().n_cols);
 					gdw::layer _nabla_w(1, _nn->w().n_cols);
 
@@ -302,10 +302,10 @@ void gdw::NNLayer::builtins() {
 						_nn->w()(_l) = _nn->w()(_l) - ((_nn->learning_rate() / _batch.size()) * _nabla_w(_l));
 					}
 
-					std::cout << "Epoch: " << _e << "\r" << flush;
-					//std::cout << _nn->w()(2) << endl << flush;
+					// std::cout << "Epoch: " << _e << "\r" << flush;
+					//std::cout << "--------------------------------------------" << endl << _nn->w()(1) << endl << _nn->w()(2) << endl << endl << flush;
 				}
-				std::cout << endl << flush;
+				// std::cout << endl << flush;
 				return zpt::undefined;
 			}
 		);
@@ -319,6 +319,10 @@ void gdw::NNLayer::builtins() {
 				zpt::json _x = _args[0];
 				arma::mat _a = gdw::matrix::to_matrix(_x).t();
 
+				// std::cout << "INPUT\n" << _a << endl << flush;
+				// std::cout << "WEIGHTS\n" << (_nn->w()(1)) << endl << flush;
+				// std::cout << "FIRST LAYER RESULT\n" << ((_nn->w()(1) * _a)) << endl << flush;
+				
 				for (size_t _l = 1; _l != _nn->b().n_cols; _l++) {
 					_a = gdw::sigmoid((_nn->w()(_l) * _a) + _nn->b()(_l));
 				}	
@@ -373,7 +377,7 @@ void gdw::NNLayer::builtins() {
 }
 
 arma::mat gdw::sigmoid(arma::mat _z) {
-	return 1 / (1 + arma::exp(_z));
+	return 1 / (1 + arma::exp(-_z));
 }
 
 arma::mat gdw::sigmoid_prime(arma::mat _z) {
