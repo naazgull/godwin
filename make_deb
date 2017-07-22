@@ -1,12 +1,7 @@
-#!/bin/zsh
+#!/bin/bash
 
-distro=$(lsb_release -c -s)
-
-mkdir -p packages/$distro/binary-amd64
-mkdir -p upstream/$distro
-
-rm -rfv upstream/$distro/*
-
+mkdir -p upstream
+rm -rfv upstream/*
 for f in *.tar.gz
 do
     fullname=${f%.tar.gz}
@@ -15,10 +10,10 @@ do
     no_revision_prefix=${prefix%-*}
     version=${no_revision_prefix##*-}
     no_version_prefix=${no_revision_prefix%-*}
-    orig=upstream/$distro/$no_version_prefix\_$version.orig.tar.gz
+    orig=upstream/$no_version_prefix\_$version.orig.tar.gz
     echo "processing $orig"
     cp -rf $f $orig
-    pushd upstream/$distro
+    pushd upstream/
     tar xvzf $no_version_prefix\_$version.orig.tar.gz
     pushd $prefix/
     debuild -us -uc
@@ -26,7 +21,7 @@ do
     then
 	exit -1
     fi
-    sudo mv ../$no_version_prefix\_$version-$revision\_amd64.deb ../../../packages/$distro/binary-amd64/
+    sudo mv ../$no_version_prefix\_$version-$revision\_amd64.deb ../../
     if [[ $? != 0 ]]
     then
 	exit -1
@@ -34,4 +29,5 @@ do
     popd
     popd
 done
+rm -rfv upstream/
 

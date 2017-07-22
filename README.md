@@ -13,36 +13,20 @@ stages
 
 # INSTALLATION
 
-## Ubuntu 16.04 / 16.10
+## Ubuntu 16.04 / 16.10 / 17.04
 
 ### 1) Dependencies
 
-a) Install libzmq, libczmq and sodium from Ubuntu repositories:
-
-	$ sudo apt-get install libzmq3-dev libczmq-dev libsodium18 libarmadillo-dev
-
-b) Install [libcurve](https://github.com/zeromq/libcurve) from Github:
-
-	$ git clone git://github.com/zeromq/libcurve.git
-	$ cd libcurve
-	$ sh autogen.sh
-	$ ./autogen.sh
-	$ ./configure && make check
-	$ sudo make install
-	$ sudo ldconfig
-	$ cd ..
-
-c) Add GPG key and repository to your 'sources.list.d'
+a) Add GPG key and repository to your 'sources.list.d'
 
 	$ wget -O - https://repo.dfz.pt/apt/dfz_apt.key | sudo apt-key add -
 	$ echo 'deb https://repo.dfz.pt/apt/ubuntu $(lsb_release -sc) main' | sudo tee /etc/apt/sources.list.d/naazgull.list
 
-d) Install zapata
+b) Install zapata JSON library
 
-	$ sudo apt-get update
-	$ sudo apt-get install zapata-base zapata-json zapata-http zapata-addons zapata-events zapata-zmq zapata-rest
+	$ sudo apt update
+	$ sudo apt install zapata-base zapata-json
 
 ### 2) Install Godwin
 
-	$ sudo apt-get update
-	$ sudo apt-get install godwin
+	$ sudo apt install godwin

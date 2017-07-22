@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2014 n@zgul <naazgull@dfz.pt>
+Copyright (c) 2014 n@zgul <n@zgul.me>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -241,7 +241,7 @@ zpt::json gdw::NNLayer::feed_forward(zpt::json _input) {
 }
 
 zpt::json gdw::NNLayer::train(zpt::json _batch, std::size_t _training_batch_size, std::size_t _n_epochs) {
-	zpt::json _args({ _batch, zpt::json::unsign_long(_training_batch_size), zpt::json::unsign_long(_n_epochs) });
+	zpt::json _args({ _batch, zpt::json::ulong(_training_batch_size), zpt::json::ulong(_n_epochs) });
 	zpt::lambda _fn = (this->__network["lambdas"]["layers"]["0"]["train"]->type() == zpt::JSLambda ? this->__network["lambdas"]["layers"]["0"]["train"]->lbd() : this->__network["lambdas"]["defaults"]["train"]->lbd());
 	return _fn(_args, zpt::context(this));
 }

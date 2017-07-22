@@ -9,9 +9,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the `crypto' library (-lcrypto). */
-#define HAVE_LIBCRYPTO 1
-
 /* Define to 1 if you have the `dl' library (-ldl). */
 #define HAVE_LIBDL 1
 
@@ -24,35 +21,14 @@
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #define HAVE_LIBPTHREAD 1
 
-/* Define to 1 if you have the `ssl' library (-lssl). */
-#define HAVE_LIBSSL 1
-
 /* Define to 1 if you have the `z' library (-lz). */
 #define HAVE_LIBZ 1
 
 /* Define to 1 if you have the `zapata-base' library (-lzapata-base). */
 #define HAVE_LIBZAPATA_BASE 1
 
-/* Define to 1 if you have the `zapata-events' library (-lzapata-events). */
-#define HAVE_LIBZAPATA_EVENTS 1
-
-/* Define to 1 if you have the `zapata-http' library (-lzapata-http). */
-#define HAVE_LIBZAPATA_HTTP 1
-
 /* Define to 1 if you have the `zapata-json' library (-lzapata-json). */
 #define HAVE_LIBZAPATA_JSON 1
-
-/* Define to 1 if you have the `zapata-rest' library (-lzapata-rest). */
-#define HAVE_LIBZAPATA_REST 1
-
-/* Define to 1 if you have the `zapata-users' library (-lzapata-users). */
-#define HAVE_LIBZAPATA_USERS 1
-
-/* Define to 1 if you have the `zapata-zmq' library (-lzapata-zmq). */
-#define HAVE_LIBZAPATA_ZMQ 1
-
-/* Define to 1 if you have the `zmq' library (-lzmq). */
-#define HAVE_LIBZMQ 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -85,7 +61,7 @@
 #define PACKAGE "godwin"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "naazgull@dfz.pt"
+#define PACKAGE_BUGREPORT "n@zgul.me"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "godwin"
