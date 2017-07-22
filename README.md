@@ -33,7 +33,7 @@ b) Install zapata JSON library
 
 # USAGE EXAMPLE
 
-```
+```c++
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
