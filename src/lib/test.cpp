@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 	try {
 		learn_identity();
 	}
-	catch (zpt::AssertionException& _e) {
+	catch (zpt::assertion& _e) {
 		std::cout << _e.what() << endl << flush;
 	}
 	return 0;
