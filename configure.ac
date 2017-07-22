@@ -1,6 +1,6 @@
 
 AC_PREREQ(2.59)
-AC_INIT(godwin, 0.9.3-1yakkey+develop2, n@zgul.me)
+AC_INIT(godwin, 0.9.3-1yakkety2, n@zgul.me)
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])

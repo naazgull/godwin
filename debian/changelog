@@ -1,16 +1,16 @@
-godwin (0.9.3-1yakkey+develop2) yakkety; urgency=medium
+godwin (0.9.3-1yakkety2) yakkety; urgency=medium
 
   * Version bump
 
- -- n@zgul <n@zgul.me>  Sat, 22 Jul 2017 15:11:10 +0100
+ -- n@zgul <n@zgul.me>  Sat, 22 Jul 2017 15:14:13 +0100
 
-godwin (0.9.3-1yakkey+develop1) yakkety; urgency=medium
+godwin (0.9.3-1yakkety1) yakkety; urgency=medium
 
   * Version bump
 
  -- n@zgul <n@zgul.me>  Thu, 05 Jan 2017 01:19:22 +0000
 
-godwin (0.0.1-1yakkety+develop1) yakkety; urgency=medium
+godwin (0.0.1-1yakkety1) yakkety; urgency=medium
 
   * Initial release.
 
